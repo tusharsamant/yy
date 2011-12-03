@@ -16,7 +16,6 @@ sub _connect {
     );
 
     $dbh->sqlite_update_hook(sub {
-    warn "$modifications of $TXN_SIZE\n";
         my($act, $db, $table, $rowid) = @_;
         return unless $db eq 'main';
         $modifications++;
