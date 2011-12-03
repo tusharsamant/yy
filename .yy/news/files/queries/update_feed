@@ -1,0 +1,5 @@
+update feed set
+    requested = CURRENT_TIMESTAMP,
+    retrieved = CURRENT_TIMESTAMP,
+    content = ?
+where feedurl = ?

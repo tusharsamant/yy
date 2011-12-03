@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ x = "x$1" ]; then
+    echo Usage: $Y `basename $0` link-number 1>&2
+    exit 1
+fi
+
+l=`sed -n "s/^ *$1\\. *http/http/p"`
+
+if [ x = "x$l" ]; then
+    echo link not found 1>&2
+    exit 1
+fi
+
+open "$l"

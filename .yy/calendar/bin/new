@@ -1,0 +1,6 @@
+date=`$Y utcdate $*`
+if [ "x$date" = x ]; then
+    echo did not understand date 1>&2
+    exit 1
+fi
+$Y dbrun insert "$date"

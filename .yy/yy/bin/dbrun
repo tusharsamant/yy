@@ -1,0 +1,3 @@
+query=`$Y path queries/$1`
+shift
+$Y dbrunfile $query "$@"

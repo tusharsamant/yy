@@ -1,0 +1,19 @@
+#!/bin/sh -e
+
+if [ "x$1" = "x" ]
+then
+  echo Usage: \$Y `basename $0` folder
+  exit
+fi
+
+folder=stories/$1
+
+if [ ! -e $folder ]; then
+  mkdir -p $folder/tmp $folder/new $folder/cur
+fi
+
+# dumb external read
+safecat $folder/tmp $folder/new | (read filename
+echo $folder/new/$filename)
+
+touch $folder

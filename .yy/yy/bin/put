@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$1" = "" ]
+then
+  echo Usage: `basename $0` file 1>&2
+  exit
+fi
+
+if [ -e "files/$1" -a "x$2" != "xreally" ]; then
+  echo $1 "exists; to write to it, follow with 'really'" 1>&2
+  exit
+fi
+
+cat > "files/$1"

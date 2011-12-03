@@ -1,0 +1,66 @@
+#  view headers
+ignore *
+unignore date from x-loc subject 
+unhdr_order *
+hdr_order date from x-loc subject
+
+source ~/.mutt/rc_key_bindings
+source ~/.mutt/mutt-colors-solarized/mutt-colors-solarized-dark-16.muttrc
+
+set menu_scroll
+set envelope_from=yes
+set history = 50
+set dotlock_program="/opt/local/bin/mutt_dotlock"
+
+##########################################################################
+## Main menu
+set arrow_cursor
+set auto_tag
+set date_format = "%d%b%y"
+set index_format = "%4C %Z %8.8F  %-64.64s %d"
+set sort = reverse-date-received
+
+##########################################################################
+## Pager options
+set tilde
+set pager_stop
+# set pager_format = "-%S- %C/%m: %-20.20n   %s"
+set pager_context = 1
+
+##########################################################################
+## Compose options
+set edit_headers
+set editor = "vim"
+
+##########################################################################
+## Folders and mailbox
+set folder = "/Users/tushar/.yy/news/stories"
+set folder_format = "%-20.20f  %d  %8s"
+set move = no
+set mbox_type = Maildir
+set sort_browser = reverse-date
+
+##########################################################################
+## mailcap and MIME
+set mailcap_sanitize
+set mailcap_path = ~/.mutt/mailcap
+
+##########################################################################
+## Pipe options
+# unset pipe_decode
+# unset pipe_split
+# set pipe_sep = newline
+
+##########################################################################
+## General Sendmail options
+set sendmail = /usr/local/sbin/sendmail
+
+##########################################################################
+## news stuff
+macro pager v "|822field x-url|xargs open<enter><enter><enter>"
+macro pager o "|y open-link "
+
+folder-hook freshm set sort=subject
+folder-hook cpan   set sort=subject
+folder-hook etc    set sort=from
+folder-hook fluff  set sort=from

@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+
+use autodie;
+use warnings;
+use strict;
+use integer;
+use DBI;
+
+my $dbh = DBI->connect(
+    "dbi:SQLite:dbname=db","","",
+    { PrintError => 0, RaiseError => 1 }
+);
+
+eval {
+    my($query, @args) = @ARGV or die "";
+    my @row;
+
+    open(my $f, "queries/$query");
+    my $sth = $dbh->prepare(join '', <$f>);
+    close($f);
+
+    local ($\, $,) = ($/, "\t");
+    $sth->execute(@args) if @args;
+    print @row while @row = $sth->fetchrow_array;
+    while (<STDIN>) {
+        chomp;
+        $sth->execute(split /\t/);
+        no warnings 'uninitialized';
+        print @row while @row = $sth->fetchrow_array;
+    }
+};
+if ($@) {
+    $0 =~ s!.*/!!;
+    die "Usage:\n$0 query var1 var2 ...\nor\n$0 query < data\n";
+};

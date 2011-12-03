@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ "$1" = "" ]
+then
+  echo Usage: `basename $0` file
+  exit
+fi
+
+while [ ! -e "files/$1" -a -s super ]; do
+    cd super
+done
+
+echo `pwd -P`/files/$1
+

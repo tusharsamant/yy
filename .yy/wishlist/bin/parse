@@ -1,0 +1,26 @@
+#!/usr/bin/env perl
+
+use autodie;
+use integer;
+use strict;
+use warnings;
+
+use utf8;
+use charnames qw(:full);
+use open qw(:std :encoding(UTF-8));
+
+$_ = join " ", @ARGV;
+
+my ($money, $url);
+
+$url = $1 if s{\b(https?://\S+)(\.?)\b}{$2};
+$money = $1 if s{\$?(\d+(\.\d*)?)}{};
+$money = "$money." if $money !~ /\./;
+$money .= '00';
+$money =~ s{\.(\d\d).*}{$1};
+$money =~ s{^0+}{};
+
+s{"}{\\"}g for $url;
+s{"}{\\"}g;
+
+print join " ", map qq{"$_"}, $money, $url, $_;

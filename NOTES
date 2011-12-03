@@ -1,0 +1,9 @@
+TO DO:
+
+Docs for individal apps.
+Formalize init for an app, i.e. y get schema | y sqlite3.
+List all dependencies ... long help could do this free-form.
+
+Wishlist:
+An attempt to get right a generic "list" app, with calendar-like pick and
+choose. This could be used for todo lists, bookmarks, deep thoughts ...

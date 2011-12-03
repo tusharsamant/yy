@@ -1,0 +1,1 @@
+INSERT INTO feed(feedurl, name, folder) VALUES (?, ?, ?)

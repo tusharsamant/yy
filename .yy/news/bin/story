@@ -1,0 +1,123 @@
+#!/usr/bin/env perl
+#!/opt/local/bin/pperl
+
+use warnings;
+use strict;
+use integer;
+use autodie;
+use utf8;
+
+use DateTime::Format::Mail;
+use DateTime;
+use HTML::Entities;
+use HTML::FormatText::WithLinks;
+use MIME::Lite;
+use Text::Unidecode;
+use XML::Feed;
+
+use lib '../yy/lib/perl5';
+use Y;
+use Y::db;
+
+my $url = shift() or die "Usage: \$Y $0 url [check]\n";
+my $check = shift();
+
+$Y::db::TXN_SIZE = 8;
+Y::db::register($_) for qw(
+    feed_info
+    story_by_link
+);
+
+my $html_to_text = HTML::FormatText::WithLinks->new(
+    before_link => '',
+    after_link  => ' [%n]',
+);
+
+my $dim_past = DateTime::Format::Mail->format_datetime(
+    DateTime->new(
+        year  => 1969,
+        month => 12,
+        day   => 31,
+    )
+);
+
+my $story_from = Y::setting('story_from');
+my $story_to   = Y::setting('story_to');
+
+for ($story_from, $story_to) {
+    s/\n.*//;
+}
+
+my $info = Y::db::run('feed_info', $url)->fetchall_arrayref();
+die "No known feed of that url" unless @$info;
+my ($name, $content) = @{$info->[0]};
+
+$name =~ s/\W+/./g;
+$name = lc $name;
+
+my $got_story = 0;
+my $story_link; # XXX get rid of after XML::Feed::Entry is fixed
+
+eval {
+    my $feed = XML::Feed->parse(\$content);
+
+    for my $entry ($feed->entries) {
+        $story_link = $entry->link || $entry->{entry}{permaLink};
+
+        for ($story_link) {
+            s/\s+$//;
+            s/^\s+//;
+        }
+
+        next if story_seen($story_link);
+
+        $got_story = 1;
+        last if $check;
+
+        # if ($story->{content} && $story->{content}{encoded}) {
+        #     $story->{description} = $story->{content}{encoded};
+        # }
+
+        no warnings 'uninitialized';
+
+        my %story = (
+            Subject => $entry->title,
+            'X-Url' => $story_link,
+            Data    => $entry->content->body,
+        );
+
+        # if you need ultra-safe chars
+        for (keys %story) {
+          $story{$_} = unidecode(decode_entities($story{$_}));
+        }
+
+        $story{Date} = $entry->issued
+            ? DateTime::Format::Mail->format_datetime($entry->issued)
+            : $dim_past;
+
+        $story{From} = join '@', $name, $story_from;
+        $story{To} = $story_to;
+        $story{'X-Loc'} = substr($story{'X-Url'}, 0, 64);
+        if ($entry->content->type eq 'text/html') {
+            $story{Data} = $html_to_text->parse($story{Data})
+        };
+
+        my $msg = MIME::Lite->new(%story);
+        $msg->attr('content-type.charset', 'UTF-8');
+
+        $msg->print;
+        last;
+    }
+}; if ($@){
+    warn "FAIL: $name $@\n";
+};
+
+unless ($got_story) {
+    exit 1;
+}
+
+sub story_seen {
+    @{Y::db::run(story_by_link => $_[0])->fetchall_arrayref()}
+        ? 1
+        : 0
+}

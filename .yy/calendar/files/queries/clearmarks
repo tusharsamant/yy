@@ -1,0 +1,1 @@
+update mark set event_id = null where mark <> '.'

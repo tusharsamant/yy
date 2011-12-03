@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+if [ _$1 = _ ]; then
+    echo \$Y `basename $0` substr 1>&2
+    exit 1
+fi
+
+$Y dbrun url_like  %$1%

@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+if [ "x$2" = "x" ]
+then
+  echo Usage: \$Y `basename $0` feedurl file
+  exit
+fi
+
+# echo $Y dbrun mark_story_delivered \
+#     `basename $2` `grep ^X-Url: $2 | sed 's,^X-Url:\s*,,'` $1
+
+$Y dbrun mark_story_delivered \
+    `basename $2` `grep ^X-Url: $2 | sed 's,^X-Url:\s*,,'` $1
+

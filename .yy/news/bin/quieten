@@ -1,0 +1,9 @@
+#!/bin/sh -e 
+
+if [ "x$2" = x ]; then
+    echo Usage: $Y `basename $0` "'interval spec' interval spec" 1>& 2
+    exit 1
+fi
+
+ispec="$1"; shift 
+$Y quiet "$ispec" | cut -f1 | $Y poll "$@"

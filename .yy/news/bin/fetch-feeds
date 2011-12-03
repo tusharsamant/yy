@@ -1,0 +1,94 @@
+#!/usr/bin/env perl
+
+use autodie;
+use strict;
+use integer;
+use warnings;
+
+use DBI;
+use HTTP::Date;
+use HTTP::Status qw(:constants);
+use LWP;
+
+use lib '../yy/lib/perl5';
+use Y;
+use Y::db;
+
+my($limit, $verbose);
+
+for (@ARGV) {
+    if (/^menu$/) {
+        print "verbose\n";
+        exit;
+    }
+    if (/^\d/) {
+        $limit = 0+$_;
+    }
+    if (/^verbose$/) {
+        $verbose = 1;
+    }
+}
+
+$limit ||= 1337;
+
+my $U = LWP::UserAgent->new(
+    agent      => 'ynews/0.1',
+    cookie_jar => { file => 'files/cookies' }, 
+    from       => Y::setting('email'),
+);
+
+Y::db::register($_) for qw(
+    update_feed
+    mark_feed_fetched
+    mark_feed_unfetched
+);
+
+my($url, $retrieved, $requested, $projected);
+
+my $feed_h = Y::db::register('feeds_to_fetch');
+$feed_h->execute();
+$feed_h->bind_columns(\($url, $retrieved, $requested, $projected));
+
+my $pad = " " x 32;
+
+FEED: while ($feed_h->fetch) {
+
+    l(substr($url . $pad, 7, 32));
+
+    # some weeding-out
+    if ($requested and $retrieved) {
+        no integer;
+        my $now = time();
+        next FEED if $projected > $now; # a fortiori true, but leave it in
+        next FEED if 1.25*($requested - $retrieved) > ($now - $requested);
+    }
+
+    l(" get");
+
+    my $req = HTTP::Request->new(GET => $url);
+    if ($retrieved) {
+        $req->header('If-Modified-Since' => time2str($retrieved));
+    }
+
+    my $res = $U->request($req);
+
+    if ($res->code == HTTP_OK) {
+       Y::db::run(update_feed => $res->decoded_content(), $url);
+        l(" ok");
+    }
+    elsif ($res->code == HTTP_NOT_MODIFIED) {
+       Y::db::run(mark_feed_fetched => $url);
+        l(" same");
+    }
+    else {
+       Y::db::run(mark_feed_unfetched => $url);
+        l(" failed");
+    }
+
+    l("\n");
+    last if --$limit < 0;
+}
+
+sub l {
+    print STDERR @_ if $verbose;
+}

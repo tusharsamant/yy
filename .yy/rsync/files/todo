@@ -1,0 +1,12 @@
+other
+---
+out
+in
+---
+ignore-existing
+regular [default]
+delete
+---
+print command
+dry run [default]
+really

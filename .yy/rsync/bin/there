@@ -1,0 +1,6 @@
+if [ "x$YHERE" = "x$HOME" ]
+then 
+    echo
+else
+    echo $YHERE/ | sed "s!^$HOME/!!"
+fi

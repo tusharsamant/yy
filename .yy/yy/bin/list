@@ -1,0 +1,15 @@
+#!/bin/sh
+
+while true
+do
+    if [ -d files ]
+    then
+        find files -type f
+    fi
+    if [ -s super ]
+    then
+        cd super
+    else
+        break
+    fi
+done | sed 's!^files/!!'

@@ -1,0 +1,1 @@
+update feed set processed = CURRENT_TIMESTAMP where feedurl = ?

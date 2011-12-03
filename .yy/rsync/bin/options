@@ -1,0 +1,29 @@
+opt=
+case "x$1" in
+    xmenu)
+        echo light medium heavy existing
+        exit
+        ;;
+    xlight)
+        opt=--ignore-existing
+        shift
+        ;;
+    xmedium)
+        shift
+        ;;
+    xheavy)
+        opt=--delete
+        shift
+        ;;
+    xexisting)
+        opt=--existing
+        shift
+        ;;
+esac
+
+if [ "x$1" != xreally ]
+then
+   opt="--dry-run $opt"
+fi
+
+echo "--verbose --archive" $opt

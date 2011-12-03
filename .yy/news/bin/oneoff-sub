@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+
+use autodie;
+use integer;
+use strict;
+use warnings;
+
+use utf8;
+use charnames qw(:full);
+use open qw(:std :encoding(UTF-8));
+
+use lib '../yy/lib/perl5';
+
+use URI;
+use XML::Feed;
+use Y::db;
+
+my($folder, $feed, $url, $name);
+Y::db::register('subscribe_feed');
+
+eval {
+    while (<>) {
+        chomp;
+        ($folder, $url) = split /\s+/, $_, 2;
+
+        $url  = URI->new($url);
+        $feed = XML::Feed->parse($url);
+        $name = $feed->title || $url->host;
+        Y::db::run(subscribe_feed => $url, $name, $folder);
+        print "OK: $name\n";
+    }
+};
+if ($@) {
+    die "FAIL: $@ :  ", XML::Feed->errstr;
+}
+

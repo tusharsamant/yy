@@ -1,0 +1,10 @@
+SELECT
+    folder, feedurl
+FROM
+    feed
+WHERE
+    retrieved is not null
+    and
+    (processed is null or processed < retrieved)
+ORDER BY
+    ifnull(retrieved, 0)

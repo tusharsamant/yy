@@ -1,0 +1,13 @@
+CREATE TABLE event (
+    event_id integer primary key,
+    start datetime,
+    end datetime,
+    created datetime default CURRENT_TIMESTAMP,
+    closed datetime,
+    show_when text,
+    note text
+);
+CREATE TABLE mark (
+    mark text primary key,
+    event_id integer references event
+);

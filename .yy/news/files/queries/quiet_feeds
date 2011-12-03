@@ -1,0 +1,15 @@
+SELECT
+    feedurl,
+    DATETIME(max(delivered), 'localtime') AS lasthit,
+    -- STRFTIME('%s', CURRENT_TIMESTAMP, 'utc') - strftime('%s', max(delivered), 'utc') AS idle
+    period
+FROM
+    story JOIN feed USING (feedurl)
+GROUP BY
+    feedurl
+HAVING
+    DATETIME(lasthit, period) < DATETIME(lasthit, ?)
+    AND
+    DATETIME(lasthit, ?) < CURRENT_TIMESTAMP
+ORDER BY
+    lasthit DESC

@@ -1,0 +1,20 @@
+id=`$Y picked .`
+
+if [ x$id = x ]; then
+    echo no current working event 1>&2
+    exit 1
+fi
+
+t=`$Y dbquery "select datetime(start, 'localtime') from event where event_id = ?" $id`
+
+if [ x$1 = x ]; then
+    echo $t
+else
+    t=`$Y nudge "$t" $*`
+    if [ "x$t" = x ]; then
+        echo did not understand date modifier 1>&2
+        exit 1
+    fi
+    $Y dbquery "update event set start = datetime(?, 'utc') where event_id = ?" "$t" $id 
+fi
+

@@ -1,0 +1,8 @@
+id=`$Y picked .`
+
+if [ x$id = x ]; then
+    echo no current working event 1>&2
+    exit 1
+else 
+    $Y dbrun note "$*" $id 
+fi

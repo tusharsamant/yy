@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+$Y fetch 2>/dev/null
+echo
+$Y display
+echo

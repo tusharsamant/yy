@@ -1,0 +1,11 @@
+#!/bin/sh -e 
+
+if [ "x$1" = x ]; then
+    echo Usage: $Y `basename $0` "interval spec < feed-urls" 1>& 2
+    exit 1
+fi
+
+cut -f1 | while read f; do
+    $Y dbquery "update feed set period = ? where feedurl = ?" "$*" "$f"
+done
+

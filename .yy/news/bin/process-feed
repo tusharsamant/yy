@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+if [ "x$2" = "x" ]
+then
+  echo Usage: \$Y `basename $0` folder url
+  exit
+fi
+
+while ($Y story $2 check)
+do
+    $Y story $2 | $Y deliver $1 | xargs $Y mark-delivered $2
+done
+
+$Y dbrun mark_feed_processed $2

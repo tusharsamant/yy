@@ -1,0 +1,76 @@
+#!/usr/bin/env perl
+
+use integer;
+use strict;
+use warnings;
+
+use utf8;
+use charnames qw(:full);
+use open qw(:std :encoding(UTF-8));
+
+use Term::ANSIColor;
+use Date::Calc qw(Delta_DHMS Today_and_Now);
+
+my $cur = '';
+my $future;
+my $reset = 0;
+
+print color 'yellow';
+while (<>) {
+    $future = /^f/ ? 1 : 0;
+    s/^.*?\t//;
+
+    if (/^\.\t/) {
+        $cur = $_;
+        next
+    }
+    else {
+        $cur =~ s/./substr($_,0,1)/e;
+        if ($cur eq $_) {
+            s/(.)/$1./
+        }
+    }
+
+    s{
+        (
+           (\d{4})-(\d\d)-(\d\d)
+            \s+ 
+            (\d\d):(\d\d):(\d\d)
+        )
+    }{
+        human($1,$2, $3, $4, $5, $6, $7)
+    }gex;
+
+    if ($future && !$reset) {
+        print color 'blue';
+        $reset = 1;
+    }
+
+    print
+}
+
+if (!$reset) {
+    print color 'reset';
+}
+
+sub human {
+    my $date = shift;
+    my ($d, $h, $m, $q) = Delta_DHMS(Today_and_Now(), @_);
+
+    if ($q < 0) {
+        ($d, $h, $m) = Delta_DHMS(@_, Today_and_Now());
+        $q = ' ago';
+    }
+    else {
+        $q = '';
+    }
+
+    sprintf "%19s",
+    $d > 4
+    ? $date
+    : $d > 0 ? "$d days$q"
+    : $h > 2 ? "$h hours$q"
+    : $h > 0 ? "$h hr $m min$q"
+    : $m > 0 ? "$m minutes$q"
+    : "now"
+}

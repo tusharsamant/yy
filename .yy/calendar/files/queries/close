@@ -1,0 +1,1 @@
+update event set closed = CURRENT_TIMESTAMP where event_id = ?

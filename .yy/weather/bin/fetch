@@ -1,0 +1,14 @@
+#!/bin/sh
+
+resp=files/response.json
+age30min=`(date +%s; stat -f-%m-1800 $resp) | fmt -100 | bc`
+
+case $age30min in
+    -*)
+        echo Less than 30 minutes old. 1>&2
+        exit
+        ;;
+    *)
+        curl -s 'http://api.wunderground.com/api/'`$Y get apikey`'/geolookup/conditions/forecast/q/'`$Y get location`'.json' > $resp
+        ;;
+esac

@@ -1,0 +1,12 @@
+set -e
+id=`$Y picked .`
+if [ x$id = x ]; then
+    echo no current working event 1>&2
+    exit 1
+else
+    tmp=`mktemp tmp/noteXXXX`
+    $Y dbquery 'select note from event where event_id = ?' $id > $tmp
+    ${VISUAL:-vi} $tmp
+    $Y dbrun note "`cat $tmp`" $id 
+    rm $tmp
+fi

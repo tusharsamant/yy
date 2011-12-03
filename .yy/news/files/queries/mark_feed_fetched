@@ -1,0 +1,3 @@
+UPDATE feed
+SET requested = CURRENT_TIMESTAMP, retrieved = CURRENT_TIMESTAMP
+WHERE feedurl = ?

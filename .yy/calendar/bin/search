@@ -1,0 +1,7 @@
+if [ x$1 = x ]; then
+    echo needs a pcre pattern 1>& 2
+    exit 1
+fi
+
+$Y raw-list open | pcregrep -i $1 | $Y readable
+

@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+
+use autodie;
+use integer;
+use strict;
+use warnings;
+
+use utf8;
+use charnames qw(:full);
+use open qw(:std :encoding(UTF-8));
+
+use Date::Manip;
+
+my ($base_d, $base_t) = split " ", shift();
+my ($now_d) = dt('now');
+my $then; for ($then = join " ", @ARGV) {
+    s/\s+/ /g; s/^ //; s/ $//;
+}
+
+no warnings 'uninitialized';
+my ($then_d, $then_t) = dt($then);
+
+if ($then =~ /^[+-]/) {
+    print formatted(DateCalc(ParseDate("$base_d $base_t"), $then));
+}
+elsif ($then_t eq '00:00:00') {
+    print "$then_d $base_t"
+}
+elsif ($then_d eq $now_d) {
+    print "$base_d $then_t"
+}
+else {
+    print "$then_d $then_t"
+}
+
+sub formatted { UnixDate($_[0], "%Y-%m-%d %H:%M:%S") }
+
+sub dt { split " ", formatted(ParseDate($_[0])) }
+
+__END__
+# now             2011-08-14 21:46:05
+# + 5 hours       2011-08-15 02:46:22 by fiat a delta
+# sep 1           2011-09-01 00:00:00 because time = 0, override day
+# 5pm             2011-08-14 17:00:00 because day matches today, override time
+# sep 1 3:45pm    2011-09-01 15:45:00 no match, override
+

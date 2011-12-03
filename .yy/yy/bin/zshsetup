@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "compctl -f -x 'p[1]' -k '("
+    find bin -type f -a -perm -0555 | sed s!bin/!!
+    (cd ~/.yy/yy; find bin -type f -a -perm -0555 | sed s!bin/!!)
+echo ")' - 'c[-1,get],c[-1,path],c[-1,put],c[-1,delete]' -k '("
+    $Y list
+echo ")' - 'c[-1,dbrun]' -k '("
+    $Y list | grep ^queries/ | sed s,^queries/,,
+$Y get menus 2>/dev/null | while read m
+do
+    echo ")' - 'c[-1,$m]' -k '("
+    $Y $m menu 2>/dev/null
+done
+echo ")' -- $Y"
+

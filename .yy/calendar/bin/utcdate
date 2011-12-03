@@ -1,0 +1,1 @@
+perl -MDate::Manip -e 'print UnixDate(Date_ConvTZ(ParseDate(join " ", @ARGV), Date_TimeZone, "UTC"), "%Y-%m-%d %H:%M:%S")' $*

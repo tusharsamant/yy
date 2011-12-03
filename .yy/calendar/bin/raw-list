@@ -1,0 +1,81 @@
+#!/usr/bin/env perl
+
+use autodie;
+use warnings;
+use strict;
+use integer;
+use DBI;
+
+my $dbh = DBI->connect(
+    "dbi:SQLite:dbname=db","","",
+    { PrintError => 0, RaiseError => 1 }
+); END { $dbh->disconnect if $dbh }
+
+my %clause = (
+    open    => 'closed is null',
+    future  => 'start > CURRENT_TIMESTAMP',
+    default => q{
+        case
+            when show_when is null then start
+            else datetime(start, show_when)
+        end 
+        <
+        datetime('now', 'localtime', 'start of day', '2 days', 'utc')
+        and closed is null
+    },
+);
+
+my $clause = shift;
+
+if ($clause eq 'menu') {
+    print map "$_\n", sort keys %clause;
+    exit;
+}
+
+if ($clause) {
+    $clause = $clause{$clause}
+        or die join(" ", "Needs one of:", sort keys %clause) . "\n";
+
+    $dbh->begin_work;
+    eval {
+        my $mark = 'a';
+        my $remark = $dbh->prepare(
+            'insert or replace into mark (mark, event_id) values (?, ?)'
+        );
+
+        $dbh->do(q{update mark set event_id = null where mark <> '.'});
+
+        $remark->execute($mark++, $_->[0])
+            for @{$dbh->selectall_arrayref(
+                "select event_id from event where $clause order by start")};
+
+        $remark->finish;
+
+    };
+    if ($@) {
+        my $err = $@;
+        eval { $dbh->rollback };
+        die $err;
+    }
+    else {
+        $dbh->commit;
+    }
+}
+
+for (@{$dbh->selectall_arrayref(
+    qq{select
+            case when start > CURRENT_TIMESTAMP then 'f' else 'p' end,
+            m.mark,
+            datetime(e.start, 'localtime'),
+            datetime(e.end, 'localtime'),
+            e.note
+        from
+            event e join mark m using (event_id)
+        order by 2
+    }
+)})
+{
+    no warnings 'uninitialized';
+    print join("\t", @$_), "\n";
+}
+

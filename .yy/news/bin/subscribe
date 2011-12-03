@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+
+use autodie;
+use integer;
+use strict;
+use warnings;
+
+use utf8;
+use charnames qw(:full);
+use open qw(:std :encoding(UTF-8));
+
+use lib '../yy/lib/perl5';
+
+use URI;
+use XML::Feed;
+use Y::db;
+
+my $url = shift() or die "Usage: \$Y $0 url [folder]\n";
+my $folder = shift() || 'inbox';
+my($feed, $feeduri, @feedurls, $name);
+eval {
+    @feedurls = XML::Feed->find_feeds($url);
+    $feeduri  = URI->new($feedurls[0]);
+    $feed     = XML::Feed->parse($feeduri);
+    $name     = $feed->title || $feeduri->host;
+    Y::db::register('subscribe_feed');
+    Y::db::run(subscribe_feed => $feedurls[0], $name, $folder);
+};
+if ($@) {
+    die "FAIL: $@ :  ", XML::Feed->errstr;
+}
+

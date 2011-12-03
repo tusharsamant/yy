@@ -1,0 +1,2 @@
+insert into duck(price, url, description) values(?, ?, ?);
+insert or replace into tag (tag, duck_id) values ('.', last_insert_rowid());

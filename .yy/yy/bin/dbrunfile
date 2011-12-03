@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+
+use autodie;
+use warnings;
+use strict;
+use integer;
+use DBI;
+
+my $dbh = DBI->connect(
+    "dbi:SQLite:dbname=db","","",
+    { PrintError => 0, RaiseError => 1 }
+);
+
+my($sql, @args);
+
+eval {
+    ($sql, @args) = @ARGV or die "";
+    my @row;
+
+    open(my $f, $sql);
+    my @sth = map $dbh->prepare($_), grep /\S/, split ';', join '', <$f>;
+    close($f);
+
+    local ($\, $,) = ($/, "\t");
+    for my $sth (@sth) {
+        if (@args < $sth->{NUM_OF_PARAMS}) {
+            die "Insufficient number of args\n";
+        }
+        $sth->execute(splice(@args, 0, $sth->{NUM_OF_PARAMS}));
+        no warnings 'uninitialized';
+        print @row while @row = $sth->fetchrow_array;
+    }
+};
+if ($@) {
+    $0 =~ s!.*/!!;
+    my $errstr = $DBI::errstr // '';
+    $errstr .= "\n" . join("\t", @args) . "\n";
+    die "$@\n$errstr\nUsage: $0 query var1 var2 ...\n";
+};

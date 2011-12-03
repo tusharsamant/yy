@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ "$1" = "" ]
+then
+  echo Usage: `basename $0` file
+  echo Files:
+  $Y list
+  exit
+fi
+
+while [ ! -e "files/$1" -a -s super ]; do
+    cd super
+done
+
+cat "files/$1"

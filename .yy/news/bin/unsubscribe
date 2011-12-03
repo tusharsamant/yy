@@ -1,0 +1,6 @@
+#!/bin/sh -e 
+
+cut -f1 | while read f; do
+    $Y dbquery "delete from feed where feedurl = ?" "$f"
+done
+

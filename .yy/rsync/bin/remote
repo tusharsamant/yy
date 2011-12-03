@@ -1,0 +1,14 @@
+if [ x$1 = x ]; then
+    $Y get remote
+else
+    arg=`$Y unalias "$*"`
+    case "$arg" in
+    *[:/])
+        echo $arg | $Y put remote really
+        ;;
+    *)
+        echo $arg does not end in : or / 1>&2
+        exit 1
+        ;;
+    esac
+fi

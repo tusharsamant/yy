@@ -1,0 +1,20 @@
+id=`$Y picked .`
+
+if [ x$id = x ]; then
+    echo no current working event 1>&2
+    exit 1
+fi
+
+if [ x$1 = x ]; then
+    $Y dbquery "select show_when from event where event_id = ?" $id
+    exit
+fi
+
+t=`$Y dbquery "select datetime(start, ?) from event where event_id = ?" "$*" $id`
+
+if [ "x$t" = x ]; then
+    echo did not understand alarm 1>&2
+    exit 1
+fi
+
+$Y dbquery "update event set show_when = ? where event_id = ?" "$*" $id 

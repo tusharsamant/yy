@@ -1,0 +1,6 @@
+SELECT
+    feedurl, requested, retrieved
+FROM
+    feed
+WHERE
+    IFNULL(requested,0) > IFNULL(retrieved, 0)

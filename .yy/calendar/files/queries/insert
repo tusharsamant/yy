@@ -1,0 +1,2 @@
+insert into event(start) values(?);
+insert or replace into mark (mark, event_id) values ('.', last_insert_rowid());

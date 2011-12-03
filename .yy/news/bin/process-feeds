@@ -1,0 +1,35 @@
+#!/bin/sh -e
+
+verbose=0
+limit=0
+
+while [ _$1 != _ ]
+do
+    case $1 in
+    menu)
+        echo verbose
+        exit
+        ;;
+    [0-9]*)
+        limit=$1
+        ;;
+    verbose)
+        verbose=1
+        ;;
+    esac
+    shift
+done
+
+if (( limit > 0 ))
+then
+    $Y dbrun feeds_to_process | head -$limit
+else
+    $Y dbrun feeds_to_process
+fi | while read f u
+do
+    if [ $verbose = 1 ]
+    then
+        echo $u | sed 's/.......//'
+    fi
+    $Y process-feed $f $u
+done

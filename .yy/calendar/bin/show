@@ -1,0 +1,5 @@
+if [ x$1 = xmenu ]; then
+    $Y raw-list menu
+else
+    $Y raw-list ${1:-default} | $Y readable
+fi

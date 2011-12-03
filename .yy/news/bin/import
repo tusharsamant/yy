@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+use integer;
+
+use lib '../yy/lib/perl5';
+
+use Text::Unidecode;
+use XML::OPML::LibXML;
+use Y::db;
+
+my $file = shift or do {
+    $0 =~ s!.*/!!;
+    die "Usage: \$Y $0 opml-file\n";
+};
+
+Y::db::register('subscribe_feed');
+
+my $folder;
+XML::OPML::LibXML
+    ->new
+    ->parse_file($file)
+    ->walkdown(sub {
+            my $o = shift;
+            if ($o->is_container) {
+                $folder = $o->title;
+            }
+            else {
+                eval {
+                    Y::db::run(
+                        subscribe_feed => 
+                            $o->xml_url,
+                            unidecode($o->title),
+                            $folder ? $folder : 'inbox'
+                    );
+                }; if ($@) {
+                    warn $@;
+                }
+            }
+        }
+    )
+;
+

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "x$1" = "xmenu" ]
+then
+        cd stories
+        echo *
+        exit
+fi
+
+if [ "x$1" = "x" ]
+then
+    mutt -F `$Y path muttrc`
+else
+    mutt -F `$Y path muttrc` -f stories/$1
+fi
+

@@ -1,0 +1,13 @@
+CREATE TABLE duck (
+    duck_id integer primary key,
+    created datetime default CURRENT_TIMESTAMP,
+    got datetime,
+    closed datetime,
+    description text,
+    price text,
+    url text unique
+);
+CREATE TABLE tag (
+    tag text primary key,
+    duck_id integer references duck
+);

@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+$Y get aliases 2> /dev/null | perl -e '
+    BEGIN {
+        while (<STDIN>) {
+            chomp;
+            ($k, $v) = split /\s+/, $_, 2;
+            $A{$k} = $v;
+        }
+    }
+    print join " ", map {exists $A{$_} ? $A{$_} : $_}  @ARGV;
+' "$@"

@@ -1,0 +1,7 @@
+#!/bin/sh -e
+
+cd stories
+for i in *; do
+    /bin/echo -n $i; find $i -type f | egrep '(new/|cur/.*,$)' | wc -l
+done | awk '{ if ($2) printf "%4d\t%s\n", $2, $1 }' | sort -nr
+

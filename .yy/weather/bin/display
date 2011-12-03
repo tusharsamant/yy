@@ -1,0 +1,66 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use autodie;
+use integer;
+use utf8;
+use charnames qw(:full);
+use open qw(:std :encoding(UTF-8));
+
+# ----------------------------------------------------------------------
+
+use JSON;
+use Scalar::Util 'reftype';
+
+my $resp = do {
+    local $/;
+    open(my $fh, '<', 'files/response.json');
+    my $json_text   = <$fh>;
+    decode_json($json_text);
+};
+
+my $current = bydotted($resp, 'current_observation');
+my $observation_time = bydotted($current, 'observation_time');
+$observation_time =~ s/^Last Updated on //;
+
+print filled($current, <<EOT);
+%observation_location.city $observation_time
+
+%temp_f %#F %temp_c %#C  %weather  %precip_today_in %#in  %wind_dir %wind_mph %#mph
+
+EOT
+
+my $forecasts = bydotted($resp, 'forecast.simpleforecast.forecastday')
+    or exit;
+my $forecast;
+for (0,1,2) {
+    $forecast = $forecasts->[$_] or last;
+print filled($forecast, <<EOT);
+%date.month/%date.day %date.weekday_short  %high.fahrenheit %low.fahrenheit %conditions
+EOT
+}
+
+sub bydotted {
+    my($data, $path) = @_;
+    my $cur = $data;
+    foreach my $segment (split /\./, $path) {
+        if (reftype($cur) eq "ARRAY") {
+            $cur = $cur->[$segment]; 
+        }
+        else {
+            $cur = $cur->{$segment}; 
+        }
+        last unless $cur;
+    }
+    $cur;
+}
+
+sub filled {
+    my($data, $template) = @_;
+    for ($template) {
+        s{%([\w.]+)}{bydotted($data, $1)}eg;
+        s{\s*%#\s*}{}g;
+    }
+    $template;
+}

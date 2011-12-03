@@ -1,0 +1,7 @@
+id=`$Y picked $1`
+if [ x$id = x ]; then
+    echo no such label 1>&2
+    exit 1
+else
+    $Y dbrun point $id
+fi

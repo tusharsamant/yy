@@ -1,0 +1,10 @@
+SELECT
+    feedurl,
+    strftime('%s', retrieved) 'retrieved',
+    strftime('%s', requested) 'requested',
+    strftime('%s', requested, period) 'projected'
+FROM
+    feed
+WHERE
+    requested IS NULL
+    OR datetime(requested, period) < CURRENT_TIMESTAMP

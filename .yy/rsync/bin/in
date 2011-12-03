@@ -1,0 +1,6 @@
+if [ x$1 = xmenu ]
+then
+    $Y options menu
+else
+    rsync `$Y options $*` `$Y remote``$Y there` `$Y here`
+fi

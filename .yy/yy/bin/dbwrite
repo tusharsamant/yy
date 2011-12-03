@@ -1,0 +1,57 @@
+#!/usr/bin/env perl
+
+use autodie;
+use warnings;
+use strict;
+use integer;
+use DBI;
+
+my $TXN_SIZE = 200;
+my $modifications = 0;
+
+my $dbh = DBI->connect(
+    "dbi:SQLite:dbname=db","","",
+    { PrintError => 0, RaiseError => 1 }
+);
+
+$dbh->begin_work;
+
+END {
+    $dbh->commit;
+    $dbh->disconnect;
+};
+
+$dbh->sqlite_update_hook(sub {
+    my($act, $db, $table, $rowid) = @_;
+    return unless $db eq 'main';
+    $modifications++;
+});
+
+eval {
+    my($query, @args) = @ARGV or die "why?";
+
+    open(my $f, "queries/$query");
+    my $sth = $dbh->prepare(join '', <$f>);
+    close($f);
+
+    if (@args) {
+        $sth->execute(@args)
+    }
+    else {
+        while (<STDIN>) {
+            chomp;
+            $sth->execute(split /\t/);
+            if ($modifications >= $TXN_SIZE) {
+                $dbh->commit;
+                $dbh->begin_work;
+                $modifications = 0;
+            }
+        }
+    }
+};
+if ($@) {
+    $dbh->rollback();
+    $0 =~ s!.*/!!;
+    my $errstr = $DBI::errstr // '';
+    die "$@\n$errstr\nUsage:\n$0 query var1 var2 ...\nor\n$0 query < data\n";
+};
